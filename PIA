@@ -1,3 +1,4 @@
+
 from datetime import date, datetime
 import sys
 import sqlite3
@@ -824,7 +825,7 @@ try:
                         print (f"Clave servicio: {clave}\tNombre servicio: {nombre}\tCosto servicio: {costo}")
                     
                     try:
-                        clave_servicio=int(input('Ingrese la clave del servicio a agregar o escriba 0 si ya no desea agregar servicios: ')) 
+                        clave_servicio=int(input('Ingrese la clave del servicio a agregar y escriba 0 cuando ya no deseé agregar servicios a la nota: ')) 
                         if clave_servicio == 0:
                             print('HA DECIDIDO NO AGREGAR MÁS SERVICIOS')
                             break
