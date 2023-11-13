@@ -83,3 +83,1699 @@ try:
                     print('Ingrese un correo válido. Intentélo de nuevo.')
                     continue
                 
+        def suspender_cliente():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        mi_cursor.execute(f"SELECT clave_cliente, nombre_cliente FROM clientes WHERE estatus='1' ")
+                        clientes_activos=mi_cursor.fetchall()
+                        if not clientes_activos:
+                            print('NO HAY CLIENTES ACTIVOS PARA MOSTRAR')
+                            break
+                        else:
+                            print(f"\nClientes actualmente activos:")
+                            print(f"\nClave cliente\t\tNombre cliente")
+                            for cliente in clientes_activos:
+                                print(f"\t{cliente[0]}\t\t{cliente[1]}")
+                                
+                            try:
+                                cliente_a_suspender=int(input('Ingrese la clave del cliente a suspender / Si no se va a suspender un cliente escriba 0: '))
+                                if cliente_a_suspender == 0:
+                                    print('USTED HA DECIDIDO NO SUSPENDER NINGÚN CLIENTE')
+                                    break
+                                if not cliente_a_suspender:
+                                    print('LA CLAVE NO SE PUEDE QUEDAR EN BLANCO. INGRESE UNA CLAVE VÁLIDA')
+                                    continue
+                                if cliente_a_suspender not in [clave[0] for clave in clientes_activos]:
+                                    print('LA CLAVE INGRESADA NO EXISTE EN LOS CLIENTES ACTIVOS. INGRESE UNA CLAVE VÁLIDA')
+                                    continue
+                            except ValueError:
+                                print('Ingrese un número válido. Inténtelo de nuevo.')
+                            else:
+                                mi_cursor.execute(f"SELECT * FROM clientes WHERE clave_cliente={cliente_a_suspender}")
+                                cliente_suspendido=mi_cursor.fetchall()
+                                print(f"\nCliente encontrado:")
+                                print(f"\nClave cliente\t\tNombre cliente\t\tRFC\t\t\tCorreo cliente\t\t\t\tEstatus")
+                                for cliente in cliente_suspendido:
+                                    print(f"\t{cliente[0]}\t\t{cliente[1]}\t{cliente[2]}\t\t{cliente[3]}\t\t\t{cliente[4]}")
+                                
+                                cliente_opcion_suspender=input('Si desea suspender el cliente, escriba SI / Si desea volver al menú anterior escriba NO: ').upper()
+                                if not cliente_opcion_suspender:
+                                    print('LA OPCIÓN ESTÁ EN BLANCO. INTENTE DE NUEVO')
+                                    continue
+                                if cliente_opcion_suspender=='SI':
+                                    for clave in clientes_activos:
+                                        if cliente_a_suspender==clave[0]:
+                                            mi_cursor.execute(f"UPDATE clientes SET estatus='0' WHERE clave_cliente={cliente_a_suspender}")
+                                            conn.commit()
+                                            print('SE SUSPENDIÓ EL CLIENTE')
+                                            break
+                                    break
+                                elif cliente_opcion_suspender=='NO':
+                                    print('VOLVIENDO AL MENÚ ANTERIOR')
+                                    break
+                                else:
+                                    print('Opción inválida. Escriba "SI" o "NO". Inténtelo de nuevo.')
+                                    continue          
+                except Exception as e:
+                    print(f'Ocurrió un error: {e} ')
+                    break
+                
+        def recuperar_cliente():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        mi_cursor.execute(f"SELECT clave_cliente, nombre_cliente FROM clientes WHERE estatus='0' ")
+                        clientes_suspendidos=mi_cursor.fetchall()
+                        if not clientes_suspendidos:
+                            print('NO HAY CLIENTES SUSPENDIDOS PARA MOSTRAR')
+                            break
+                        else:
+                            print(f"\nClientes actualmente suspendidos:")
+                            print(f"\nClave cliente\t\tNombre cliente")
+                            for cliente in clientes_suspendidos:
+                                print(f"\t{cliente[0]}\t\t{cliente[1]}")
+                                
+                            try:
+                                cliente_a_recuperar=int(input('Ingrese la clave del cliente a recuperar / Si no se va a recuperar un cliente escriba 0: '))
+                                if cliente_a_recuperar == 0:
+                                    print('USTED HA DECIDIDO NO RECUPERAR NINGÚN CLIENTE')
+                                    break
+                                if not cliente_a_recuperar:
+                                    print('LA CLAVE NO SE PUEDE QUEDAR EN BLANCO. INGRESE UNA CLAVE VÁLIDA')
+                                    continue
+                                if cliente_a_recuperar not in [clave[0] for clave in clientes_suspendidos]:
+                                    print('LA CLAVE INGRESADA NO EXISTE EN LOS CLIENTES SUSPENDIDOS. INGRESE UNA CLAVE VÁLIDA')
+                                    continue
+                            except ValueError:
+                                print('Ingrese un número válido. Inténtelo de nuevo.')
+                            else:
+                                mi_cursor.execute(f"SELECT * FROM clientes WHERE clave_cliente={cliente_a_recuperar}")
+                                cliente_recuperado=mi_cursor.fetchall()
+                                print(f"\nCliente encontrado:")
+                                print(f"\nClave cliente\t\tNombre cliente\t\tRFC\t\t\tCorreo cliente\t\t\t\tEstatus")
+                                for cliente in cliente_recuperado:
+                                    print(f"\t{cliente[0]}\t\t{cliente[1]}\t\t{cliente[2]}\t\t{cliente[3]}\t\t\t\t{cliente[4]}")
+                                
+                                cliente_opcion_recuperar=input(f'\nSi desea recuperar el cliente, escriba SI / Si desea volver al menú anterior escriba NO: ').upper()
+                                if not cliente_opcion_recuperar:
+                                    print('LA OPCIÓN ESTÁ EN BLANCO. INTENTE DE NUEVO')
+                                    continue
+                                if cliente_opcion_recuperar=='SI':
+                                    for clave in clientes_suspendidos:
+                                        if cliente_a_recuperar==clave[0]:
+                                            mi_cursor.execute(f"UPDATE clientes SET estatus='1' WHERE clave_cliente={cliente_a_recuperar}")
+                                            conn.commit()
+                                            print('\nSE RECUPERÓ EL CLIENTE')
+                                            break
+                                    break
+                                elif cliente_opcion_recuperar=='NO':
+                                    print('VOLVIENDO AL MENÚ ANTERIOR')
+                                    break
+                                else:
+                                    print('Opción inválida. Escriba "SI" o "NO". Inténtelo de nuevo.')
+                                    continue          
+                except Exception as e:
+                    print(f'Ocurrió un error: {e} ')
+                    break
+                      
+        def buscar_cliente_por_clave():
+            print(f'\nLista de clientes: ')
+            with sqlite3.connect ('PIA.db') as conn:
+                mi_cursor= conn.cursor()
+                mi_cursor.execute("SELECT clave_cliente, nombre_cliente FROM clientes")
+                lista_clientes=mi_cursor.fetchall()
+                print(f"\nClave cliente\tNombre cliente")
+                for cliente in lista_clientes:
+                    print(f"\t{cliente[0]}\t{cliente[1]}")
+            while True:
+                try:
+                    clave_cliente=int(input(f'\nIngrese la clave del cliente a consultar / Si no se va consultar un cliente escriba 0: '))
+                    if clave_cliente==0:
+                        print('USTED HA DECIDIDO NO CONSULTAR NINGÚN CLIENTE')
+                        break
+                    if not clave_cliente:
+                        print('LA CLAVE NO SE PUEDE QUEDAR EN BLANCO. INGRESE UNA CLAVE VÁLIDA')
+                        continue
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        mi_cursor.execute(f"SELECT * FROM clientes WHERE clave_cliente={clave_cliente}")
+                        clientes_clave=mi_cursor.fetchall()
+                        if clave_cliente not in [cliente[0] for cliente in clientes_clave]:
+                            print('El cliente no se encuentra en el sistema. Por favor, ingrese una clave válida.')
+                            continue
+                        else:
+                            print(f"\nClave cliente\t\tNombre cliente\t\tRFC\t\t\tCorreo cliente")
+                            for cliente in clientes_clave:
+                                print(f"\t{cliente[0]}\t\t{cliente[1]}\t\t{cliente[2]}\t\t{cliente[3]}")
+                            break
+             
+                except ValueError:
+                    print('Ingrese una clave válida. Intente de nuevo')
+        
+        def buscar_cliente_por_nombre():
+            while True:
+                try:
+                    nombre_cliente_buscar=input(f'\nIngrese el nombre del cliente a buscar: ').strip()
+                    nombre_cliente=nombre_cliente_buscar.title()
+                    
+                    if not nombre_cliente.strip():
+                        print('NO SE PUEDE QUEDAR EL NOMBRE DEL CLIENTE EN BLANCO, INTENTE DE NUEVO')
+                        continue
+                    if nombre_cliente.isdigit():
+                        print('EL NOMBRE DEL SERVICIO NO PUEDE SER UN NÚMERO, INTENTE DE NUEVO')
+                        continue
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        mi_cursor.execute(f"SELECT * FROM clientes WHERE nombre_cliente='{nombre_cliente}'")
+                        clientes_nombre=mi_cursor.fetchall()
+                        if nombre_cliente not in [cliente[1] for cliente in clientes_nombre]:
+                            print('EL CLIENTE NO SE ENCUENTRA EN EL SISTEMA. INGRESE UN NOMBRE VÁLIDO')
+                            continue
+                        else:
+                            print(f"\nClave cliente\t\tNombre cliente\t\tRFC\t\t\tCorreo cliente")
+                            for cliente in clientes_nombre:
+                                print(f"\t{cliente[0]}\t\t{cliente[1]}\t\t{cliente[2]}\t\t{cliente[3]}")
+                            break
+                except ValueError:
+                    print('INGRESE UN NOMBRE VÁLIDO')
+      
+        def ordenar_cliente_por_clave():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        print(f"\nClientes ordenados por clave: ")
+                        mi_cursor.execute(f"SELECT * FROM clientes WHERE estatus='1' ORDER BY clave_cliente")
+                        clientes_orden_clave=mi_cursor.fetchall()
+                        print(f"\nClave cliente\t\tNombre cliente\t\tRFC\t\t\tCorreo cliente")
+                        for cliente in clientes_orden_clave:
+                            print(f"\t{cliente[0]}\t\t{cliente[1]}\t\t{cliente[2]}\t\t{cliente[3]}")
+                            
+                        print(f"\nOpciones de exportación:")
+                        print(f"1. Excel")
+                        print(f"2. CSV")
+                        print(f"3. Volver a menú de reportes")
+                        
+                        opcion_exportar=int(input(f'\nOpción a elegir: '))
+                        match opcion_exportar:
+                            case 1:
+                                workbook = openpyxl.Workbook()
+                                sheet = workbook.active
+                                sheet.title = "Clientes_Ordenados_Clave"
+
+                                sheet['A1'] = "Clave cliente"
+                                sheet['B1'] = "Nombre cliente"
+                                sheet['C1'] = "RFC"
+                                sheet['D1'] = "Correo cliente"
+
+                                row = 2
+                                for cliente in clientes_orden_clave:
+                                    sheet[f'A{row}'] = cliente[0]
+                                    sheet[f'B{row}'] = cliente[1]
+                                    sheet[f'C{row}'] = cliente[2]
+                                    sheet[f'd{row}'] = cliente[3]
+                                    row+=1
+                                    
+                                fecha_actual=datetime.date.today()
+                                fecha_reporte = fecha_actual.strftime("%d-%m-%Y")
+                                
+                                nombre_archivo_excel = f"ReporteClientesActivosPorClave_{fecha_reporte}.xlsx"
+                                workbook.save(nombre_archivo_excel)
+                                print(f"Se ha exportado la información a '{nombre_archivo_excel}'.")      
+                                break
+                            
+                            case 2:
+                                fecha_actual=datetime.date.today()
+                                fecha_reporte = fecha_actual.strftime("%d-%m-%Y")
+                                
+                                nombre_archivo_csv=f"ReporteClientesActivosPorClave_{fecha_reporte}.csv"
+                                with open(nombre_archivo_csv, 'w', newline='') as file:
+                                    writer = csv.writer(file)
+                                    writer.writerow(["Clave cliente", "Nombre cliente", "RFC", "Correo cliente"])
+                                    for cliente in clientes_orden_clave:
+                                        writer.writerow([cliente[0], cliente[1], cliente[2], cliente[3]])
+                                    
+                                    print(f"Se ha exportado la información a '{nombre_archivo_csv}'.")
+                                    break
+                                
+                            case 3:
+                                print('VOLVIENDO AL MENÚ DE REPORTES.')
+                                break
+                            case _:
+                                print("OPCIÓN NO VÁLIDA. INGRESE UN NÚMERO DEL 1 AL 3.")
+                        
+                except ValueError:
+                    print('INGRESE UNA OPCIÓN VÁLIDA')
+                                
+                except Exception as e:
+                    print(f"Ocurrió un error: {str(e)}")
+                                    
+        def ordenar_cliente_por_nombre():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        print(f"\nClientes ordenados por nombre: ")
+                        mi_cursor.execute(f"SELECT * FROM clientes WHERE estatus='1' ORDER BY nombre_cliente")
+                        clientes_orden_clave=mi_cursor.fetchall()
+                        print(f"\nClave cliente\t\tNombre cliente\t\tRFC\t\t\tCorreo cliente")
+                        for cliente in clientes_orden_clave:
+                            print(f"\t{cliente[0]}\t\t{cliente[1]}\t\t{cliente[2]}\t\t{cliente[3]}")
+                            
+                        print(f"\nOpciones de exportación:")
+                        print(f"1. Excel")
+                        print(f"2. CSV")
+                        print(f"3. Volver a menú de reportes")
+                        
+                        opcion_exportar=int(input(f'\nOpción a elegir: '))
+                        match opcion_exportar:
+                            case 1:
+                                workbook = openpyxl.Workbook()
+                                sheet = workbook.active
+                                sheet.title = "Clientes_Ordenados_Clave"
+
+                                sheet['A1'] = "Clave cliente"
+                                sheet['B1'] = "Nombre cliente"
+                                sheet['C1'] = "RFC"
+                                sheet['D1'] = "Correo cliente"
+
+                                row = 2
+                                for cliente in clientes_orden_clave:
+                                    sheet[f'A{row}'] = cliente[0]
+                                    sheet[f'B{row}'] = cliente[1]
+                                    sheet[f'C{row}'] = cliente[2]
+                                    sheet[f'd{row}'] = cliente[3]
+                                    row+=1
+                                    
+                                fecha_actual=datetime.date.today()
+                                fecha_reporte = fecha_actual.strftime("%d-%m-%Y")
+                                
+                                nombre_archivo_excel = f"ReporteClientesActivosPorNombre_{fecha_reporte}.xlsx"
+                                workbook.save(nombre_archivo_excel)
+                                print(f"Se ha exportado la información a '{nombre_archivo_excel}'.")      
+                                break
+                            
+                            case 2:
+                                fecha_actual=datetime.date.today()
+                                fecha_reporte = fecha_actual.strftime("%d-%m-%Y")
+                                
+                                nombre_archivo_csv=f"ReporteClientesActivosPorNombre_{fecha_reporte}.csv"
+                                with open(nombre_archivo_csv, 'w', newline='') as file:
+                                    writer = csv.writer(file)
+                                    writer.writerow(["Clave cliente", "Nombre cliente", "RFC", "Correo cliente"])
+                                    for cliente in clientes_orden_clave:
+                                        writer.writerow([cliente[0], cliente[1], cliente[2], cliente[3]])
+                                    
+                                    print(f"Se ha exportado la información a '{nombre_archivo_csv}'.")
+                                    break
+                                
+                            case 3:
+                                print('VOLVIENDO AL MENÚ DE REPORTES.')
+                                break
+                            case _:
+                                print("OPCIÓN NO VÁLIDA. INGRESE UN NÚMERO DEL 1 AL 3.")
+                        
+                except ValueError:
+                    print('INGRESE UNA OPCIÓN VÁLIDA')
+                                
+                except Exception as e:
+                    print(f"Ocurrió un error: {str(e)}")
+               
+        def agregar_servicio():
+            while True:
+                try:
+                    nombre_servicio=input("Ingrese el nombre del servicio: ").strip()
+                    nombre_servicio=nombre_servicio.capitalize()
+                    if not nombre_servicio.strip():
+                        print('NO SE PUEDE QUEDAR EL NOMBRE DEL SERVICIO EN BLANCO, INTENTE DE NUEVO')
+                        continue
+                    if nombre_servicio.isdigit():
+                        print('EL NOMBRE DEL SERVICIO NO PUEDE SER UN NÚMERO, INTENTE DE NUEVO')
+                        continue
+                    else:
+                        break
+                except ValueError:
+                    print('Ingrese un nombre válido. Intentélo de nuevo.')
+                    continue
+                                    
+            while True:
+                try:
+                    costo_servicio=int(input('Ingrese el costo del servicio: '))
+                    if costo_servicio == 0:
+                        print('EL COSTO DEL SERVICIO NO PUEDE SER 0. INTENTE DE NUEVO')
+                        continue
+                    if not costo_servicio:
+                        print('EL COSTO DEL SERVICIO NO PUEDE QUEDAR EN BLANCO. INTENTE DE NUEVO')
+                        continue
+                    elif costo_servicio <= 0:
+                        print('EL COSTO DEL SERVICIO DEBE SER MAYOR A 0. INTENTE DE NUEVO')
+                        continue           
+                    else:
+                        estatus= '1'
+                        with sqlite3.connect ('PIA.db') as conn:
+                            mi_cursor= conn.cursor()                            
+                            valores=(nombre_servicio, costo_servicio, estatus)
+                            mi_cursor.execute("INSERT INTO servicios (nombre_servicio, costo_servicio, estatus) VALUES (?,?,?)", valores)
+                            conn.commit()
+                            
+                            clave_servicio=mi_cursor.lastrowid
+                            print(f'Se registró el servicio con la clave: {clave_servicio}')
+                            break                                     
+                except ValueError:
+                    print('Ingrese un costo válido. Intentélo de nuevo.')
+                    continue
+                
+        def suspender_servicio():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        mi_cursor.execute(f"SELECT clave_servicio, nombre_servicio FROM servicios WHERE estatus='1' ")
+                        servicios_activos=mi_cursor.fetchall()
+                        if not servicios_activos:
+                            print('NO HAY SERVICIOS ACTIVOS PARA MOSTRAR')
+                            break
+                        else:
+                            print(f"\nServicios actualmente activos:")
+                            print(f"\nClave servicio\t\tNombre servicio")
+                            for servicio in servicios_activos:
+                                print(f"\t{servicio[0]}\t\t{servicio[1]}")
+                                
+                            try:
+                                servicio_a_suspender=int(input('Ingrese la clave del servicio a suspender / Si no se va a suspender un servicio escriba 0: '))
+                                if servicio_a_suspender == 0:
+                                    print('USTED HA DECIDIDO NO SUSPENDER NINGÚN SERVICIO')
+                                    break
+                                if not servicio_a_suspender:
+                                    print('LA CLAVE NO SE PUEDE QUEDAR EN BLANCO. INGRESE UNA CLAVE VÁLIDA')
+                                    continue
+                                if servicio_a_suspender not in [clave[0] for clave in servicios_activos]:
+                                    print('LA CLAVE INGRESADA NO EXISTE EN LOS SERVICIOS ACTIVOS. INGRESE UNA CLAVE VÁLIDA')
+                                    continue
+                            except ValueError:
+                                print('Ingrese un número válido. Inténtelo de nuevo.')
+                            else:
+                                mi_cursor.execute(f"SELECT * FROM servicios WHERE clave_servicio={servicio_a_suspender}")
+                                servicio_suspendido=mi_cursor.fetchall()
+                                print(f"\nServicio encontrado:")
+                                print(f"\nClave servicio\t\tNombre servicio\t\t\tCosto servicio\t\tEstatus")
+                                for servicio in servicio_suspendido:
+                                    print(f"\t{servicio[0]}\t\t{servicio[1]}\t\t\t${servicio[2]}\t\t\t{servicio[3]}")
+                                
+                                servicio_opcion_suspender=input('Si desea suspender el servicio, escriba SI / Si desea volver al menú anterior escriba NO: ').upper()
+                                if not servicio_opcion_suspender:
+                                    print('LA OPCIÓN ESTÁ EN BLANCO. INTENTE DE NUEVO')
+                                    continue
+                                if servicio_opcion_suspender=='SI':
+                                    for clave in servicios_activos:
+                                        if servicio_a_suspender==clave[0]:
+                                            mi_cursor.execute(f"UPDATE servicios SET estatus='0' WHERE clave_servicio={servicio_a_suspender}")
+                                            conn.commit()
+                                            print(f'\nSE SUSPENDIÓ EL SERVICIO')
+                                            break
+                                    break
+                                elif servicio_opcion_suspender=='NO':
+                                    print(f'\nVOLVIENDO AL MENÚ ANTERIOR')
+                                    break
+                                else:
+                                    print('Opción inválida. Escriba "SI" o "NO". Inténtelo de nuevo.')
+                                    continue          
+                except Exception as e:
+                    print(f'Ocurrió un error: {e} ')
+                    break
+                
+        def recuperar_servicio():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        mi_cursor.execute(f"SELECT clave_servicio, nombre_servicio FROM servicios WHERE estatus='0' ")
+                        servicios_suspendidos=mi_cursor.fetchall()
+                        if not servicios_suspendidos:
+                            print('NO HAY SERVICIOS SUSPENDIDOS PARA MOSTRAR')
+                            break
+                        else:
+                            print(f"\nServicios actualmente suspendidos:")
+                            print(f"\nClave servicio\t\tNombre servicio")
+                            for servicio in servicios_suspendidos:
+                                print(f"\t{servicio[0]}\t\t{servicio[1]}")
+                                
+                            try:
+                                servicio_a_recuperar=int(input('Ingrese la clave del servicio a recuperar / Si no se va a recuperar un servicio escriba 0: '))
+                                if servicio_a_recuperar == 0:
+                                    print('USTED HA DECIDIDO NO RECUPERAR NINGÚN SERVICIO')
+                                    break
+                                if not servicio_a_recuperar:
+                                    print('LA CLAVE NO SE PUEDE QUEDAR EN BLANCO. INGRESE UNA CLAVE VÁLIDA')
+                                    continue
+                                if servicio_a_recuperar not in [clave[0] for clave in servicios_suspendidos]:
+                                    print('LA CLAVE INGRESADA NO EXISTE EN LOS SERVICIOS SUSPENDIDOS. INGRESE UNA CLAVE VÁLIDA')
+                                    continue
+                            except ValueError:
+                                print('Ingrese un número válido. Inténtelo de nuevo.')
+                            else:
+                                mi_cursor.execute(f"SELECT * FROM servicios WHERE clave_servicio={servicio_a_recuperar}")
+                                servicio_recuperado=mi_cursor.fetchall()
+                                print(f"\nServicio encontrado:")
+                                print(f"\nClave servicio\t\tNombre servicio\t\t\tCosto servicio\t\tEstatus")
+                                for servicio in servicio_recuperado:
+                                    print(f"\t{servicio[0]}\t\t{servicio[1]}\t\t\t${servicio[2]}\t\t\t{servicio[3]}")
+                                
+                                servicio_opcion_recuperar=input(f'\nSi desea recuperar el servicio, escriba SI / Si desea volver al menú anterior escriba NO: ').upper()
+                                if not servicio_opcion_recuperar:
+                                    print('LA OPCIÓN ESTÁ EN BLANCO. INTENTE DE NUEVO')
+                                    continue
+                                if servicio_opcion_recuperar=='SI':
+                                    for clave in servicios_suspendidos:
+                                        if servicio_a_recuperar==clave[0]:
+                                            mi_cursor.execute(f"UPDATE servicios SET estatus='1' WHERE clave_servicio={servicio_a_recuperar}")
+                                            conn.commit()
+                                            print('\nSE RECUPERÓ EL SERVICIO')
+                                            break
+                                    break
+                                elif servicio_opcion_recuperar=='NO':
+                                    print('VOLVIENDO AL MENÚ ANTERIOR')
+                                    break
+                                else:
+                                    print('Opción inválida. Escriba "SI" o "NO". Inténtelo de nuevo.')
+                                    continue          
+                except Exception as e:
+                    print(f'Ocurrió un error: {e} ')
+                    break
+
+        def buscar_servicio_por_clave():
+            print(f'\nLista de servicios: ')
+            with sqlite3.connect ('PIA.db') as conn:
+                mi_cursor= conn.cursor()
+                mi_cursor.execute("SELECT clave_servicio, nombre_servicio FROM servicios")
+                lista_servicios=mi_cursor.fetchall()
+                print(f"\nClave servicio\tNombre servicio")
+                for servicio in lista_servicios:
+                    print(f"\t{servicio[0]}\t{servicio[1]}")
+            while True:
+                try:
+                    clave_servicio=int(input(f'\nIngrese la clave del servicio a consultar / Si no se va consultar un servicio escriba 0: '))
+                    if clave_servicio==0:
+                        print('USTED HA DECIDIDO NO CONSULTAR NINGUN SERVICIO')
+                        break
+                    if not clave_servicio:
+                        print('LA CLAVE NO SE PUEDE QUEDAR EN BLANCO. INGRESE UNA CLAVE VÁLIDA')
+                        continue
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        mi_cursor.execute(f"SELECT * FROM servicios WHERE clave_servicio={clave_servicio}")
+                        servicios_clave=mi_cursor.fetchall()
+                        if clave_servicio not in [servicio[0] for servicio in servicios_clave]:
+                            print('El servicio no se encuentra en el sistema. Por favor, ingrese una clave válida.')
+                            continue
+                        else:
+                            print(f"\nClave servicio\t\tNombre servicio\t\tCosto servicio")
+                            for servicio in servicios_clave:
+                                print(f"\t{servicio[0]}\t\t{servicio[1]}\t\t${servicio[2]}")
+                            break
+             
+                except ValueError:
+                    print('Ingrese una clave válida. Intente de nuevo')
+                    
+        def buscar_servicio_por_nombre():
+            while True:
+                try:
+                    nombre_servicio_buscar=input(f'\nIngrese el nombre del servicio a buscar: ').strip()
+                    nombre_servicio=nombre_servicio_buscar.capitalize()
+                    
+                    if not nombre_servicio.strip():
+                        print('NO SE PUEDE QUEDAR EL NOMBRE DEL SERVICIO EN BLANCO, INTENTE DE NUEVO')
+                        continue
+                    if nombre_servicio.isdigit():
+                        print('EL NOMBRE DEL SERVICIO NO PUEDE SER UN NÚMERO, INTENTE DE NUEVO')
+                        continue
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        mi_cursor.execute(f"SELECT * FROM servicios WHERE nombre_servicio='{nombre_servicio}'")
+                        servicios_nombre=mi_cursor.fetchall()
+                        if nombre_servicio not in [servicio[1] for servicio in servicios_nombre]:
+                            print('EL SERVICIO NO SE ENCUENTRA EN EL SISTEMA. INGRESE UN NOMBRE VÁLIDO')
+                            continue
+                        else:
+                            print(f"\nClave servicio\t\tNombre servicio\t\tCosto servicio")
+                            for servicio in servicios_nombre:
+                                print(f"\t{servicio[0]}\t\t{servicio[1]}\t\t${servicio[2]}")
+                            break
+                except ValueError:
+                    print('INGRESE UN NOMBRE VÁLIDO')
+                    
+        def ordenar_servicio_por_clave():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        print(f"\nServicios ordenados por clave: ")
+                        mi_cursor.execute(f"SELECT * FROM servicios ORDER BY clave_servicio")
+                        servicios_orden_clave=mi_cursor.fetchall()
+                        print(f"\nClave servicio\t\tNombre servicio\t\tCosto servicio")
+                        for servicio in servicios_orden_clave:
+                            print(f"\t{servicio[0]}\t\t{servicio[1]}\t\t${servicio[2]}")
+                            
+                        print(f"\nOpciones de exportación:")
+                        print(f"1. Excel")
+                        print(f"2. CSV")
+                        print(f"3. Volver a menú de reportes")
+                        
+                        opcion_exportar=int(input(f'\nOpción a elegir: '))
+                        match opcion_exportar:
+                            case 1:
+                                workbook = openpyxl.Workbook()
+                                sheet = workbook.active
+                                sheet.title = "Servicios_Ordenados_Clave"
+
+                                sheet['A1'] = "Clave servicio"
+                                sheet['B1'] = "Nombre servicio"
+                                sheet['C1'] = "Costo servicio"
+
+                                row = 2
+                                for servicio in servicios_orden_clave:
+                                    sheet[f'A{row}'] = servicio[0]
+                                    sheet[f'B{row}'] = servicio[1]
+                                    sheet[f'C{row}'] = servicio[2]
+                                    row+=1
+                                    
+                                fecha_actual=datetime.date.today()
+                                fecha_reporte = fecha_actual.strftime("%d-%m-%Y")
+                                
+                                nombre_archivo_excel = f"ReporteServiciosPorClave_{fecha_reporte}.xlsx"
+                                workbook.save(nombre_archivo_excel)
+                                print(f"Se ha exportado la información a '{nombre_archivo_excel}'.")      
+                                break
+                            
+                            case 2:
+                                fecha_actual=datetime.date.today()
+                                fecha_reporte = fecha_actual.strftime("%d-%m-%Y")
+                                
+                                nombre_archivo_csv=f"ReporteServiciosPorClave_{fecha_reporte}.csv"
+                                with open(nombre_archivo_csv, 'w', newline='') as file:
+                                    writer = csv.writer(file)
+                                    writer.writerow(["Clave servicio", "Nombre servicio", "Costo servicio"])
+                                    for servicio in servicios_orden_clave:
+                                        writer.writerow([servicio[0], servicio[1], servicio[2]])
+                                    
+                                    print(f"Se ha exportado la información a '{nombre_archivo_csv}'.")
+                                    break         
+                            case 3:
+                                print('VOLVIENDO AL MENÚ DE REPORTES.')
+                                break
+                            case _:
+                                print("OPCIÓN NO VÁLIDA. INGRESE UN NÚMERO DEL 1 AL 3.")
+                        
+                except ValueError:
+                    print('INGRESE UNA OPCIÓN VÁLIDA')
+                                
+                except Exception as e:
+                    print(f"Ocurrió un error: {str(e)}")
+        
+        
+        def ordenar_servicio_por_nombre():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        print(f"\nServicios ordenados por nombre: ")
+                        mi_cursor.execute(f"SELECT * FROM servicios ORDER BY nombre_servicio")
+                        servicios_orden_nombre=mi_cursor.fetchall()
+                        print(f"\nClave servicio\t\tNombre servicio\t\tCosto servicio")
+                        for servicio in servicios_orden_nombre:
+                            print(f"\t{servicio[0]}\t\t{servicio[1]}\t\t${servicio[2]}")
+                            
+                        print(f"\nOpciones de exportación:")
+                        print(f"1. Excel")
+                        print(f"2. CSV")
+                        print(f"3. Volver a menú de reportes")
+                        
+                        opcion_exportar=int(input(f'\nOpción a elegir: '))
+                        match opcion_exportar:
+                            case 1:
+                                workbook = openpyxl.Workbook()
+                                sheet = workbook.active
+                                sheet.title = "Servicios_Ordenados_Clave"
+
+                                sheet['A1'] = "Clave servicio"
+                                sheet['B1'] = "Nombre servicio"
+                                sheet['C1'] = "Costo servicio"
+
+                                row = 2
+                                for servicio in servicios_orden_nombre:
+                                    sheet[f'A{row}'] = servicio[0]
+                                    sheet[f'B{row}'] = servicio[1]
+                                    sheet[f'C{row}'] = servicio[2]
+                                    row+=1
+                                    
+                                fecha_actual=datetime.date.today()
+                                fecha_reporte = fecha_actual.strftime("%d-%m-%Y")
+                                
+                                nombre_archivo_excel = f"ReporteServiciosPorNombre_{fecha_reporte}.xlsx"
+                                workbook.save(nombre_archivo_excel)
+                                print(f"Se ha exportado la información a '{nombre_archivo_excel}'.")      
+                                break
+                            
+                            case 2:
+                                fecha_actual=datetime.date.today()
+                                fecha_reporte = fecha_actual.strftime("%d-%m-%Y")
+                                
+                                nombre_archivo_csv=f"ReporteServiciosPorNombre_{fecha_reporte}.csv"
+                                with open(nombre_archivo_csv, 'w', newline='') as file:
+                                    writer = csv.writer(file)
+                                    writer.writerow(["Clave servicio", "Nombre servicio", "Costo servicio"])
+                                    for servicio in servicios_orden_nombre:
+                                        writer.writerow([servicio[0], servicio[1], servicio[2]])
+                                    
+                                    print(f"Se ha exportado la información a '{nombre_archivo_csv}'.")
+                                    break         
+                            case 3:
+                                print('VOLVIENDO AL MENÚ DE REPORTES.')
+                                break
+                            case _:
+                                print("OPCIÓN NO VÁLIDA. INGRESE UN NÚMERO DEL 1 AL 3.")
+                        
+                except ValueError:
+                    print('INGRESE UNA OPCIÓN VÁLIDA')
+                                
+                except Exception as e:
+                    print(f"Ocurrió un error: {str(e)}")
+                    
+                    
+        def capturar_fecha():
+            while True:
+                fecha_ingresada= input('Fecha de la nota a capturar (dd-mm-YYYY): ')
+                try:
+                    fecha=datetime.datetime.strptime(fecha_ingresada, "%d-%m-%Y").date()
+                except ValueError:
+                    print('FORMATO DE FECHA INCORRECTO. INTENTE DE NUEVO.')
+                    continue
+
+                hoy_fecha = datetime.date.today()
+                if (fecha.month, fecha.day) > (hoy_fecha.month, hoy_fecha.day):
+                    print('LA FECHA INGRESADA NO PUEDE SER MAYOR AL DÍA DE HOY. INTENTE DE NUEVO')
+                    continue
+                else:
+                    return fecha
+                      
+        def registrar_nota():
+            fecha_nota=capturar_fecha()
+            
+            print(f'\nLista de clientes: ')
+            with sqlite3.connect ('PIA.db') as conn:
+                conn.execute("PRAGMA foreign_keys=1")
+                mi_cursor= conn.cursor()
+                mi_cursor.execute("SELECT clave_cliente, nombre_cliente FROM clientes WHERE estatus='1'")
+                listaclientes=mi_cursor.fetchall()
+                for clave, nombre in listaclientes:
+                    print (f"Clave cliente: {clave}\tNombre cliente: {nombre}")
+            while True:
+                try:
+                    clave_cliente=int(input('Ingrese la clave del cliente: '))
+                    if clave_cliente == 0:
+                        print('LA CLAVE DEL CLIENTE NO PUEDE SER 0. INTENTE DE NUEVO.')
+                        continue
+                    if not clave_cliente:
+                        print('LA CLAVE DEL CLIENTE NO PUEDE QUEDAR EN BLANCO. INGRESE UNA CLAVE VÁLIDA')
+                        continue
+                    elif clave_cliente not in [clave[0] for clave in listaclientes]:
+                        print('LA CLAVE SELECCIONADA NO ESTÁ REGISTRADA. INTENTE DE NUEVO')
+                        continue
+                        
+                except ValueError:
+                    print('INGRESE UN NÚMERO VÁLIDO. INTENTE DE NUEVO')
+                    continue
+                break
+            
+            servicios_en_nota=[]
+            total_nota=0
+            while True:
+                print (f'\nLista de servicios: ')
+                with sqlite3.connect ('PIA.db') as conn:
+                    
+                    mi_cursor= conn.cursor()
+                    mi_cursor.execute("SELECT clave_servicio, nombre_servicio, costo_servicio FROM servicios WHERE estatus='1'")
+                    listaservicios=mi_cursor.fetchall()
+                    
+                    for clave, nombre, costo in listaservicios:
+                        print (f"Clave servicio: {clave}\tNombre servicio: {nombre}\tCosto servicio: {costo}")
+                    
+                    try:
+                        clave_servicio=int(input('Ingrese la clave del servicio a agregar o escriba 0 si ya no desea agregar servicios: ')) 
+                        if clave_servicio == 0:
+                            print('HA DECIDIDO NO AGREGAR MÁS SERVICIOS')
+                            break
+                        
+                        if clave_servicio == '':
+                            print('LA CLAVE DEL CLIENTE NO PUEDE QUEDAR EN BLANCO. INGRESE UNA CLAVE VÁLIDA')
+                            continue                        
+                        
+                        elif clave_servicio not in [servicio[0] for servicio in listaservicios]:
+                            print('LA CLAVE SELECCIONADA NO ESTÁ REGISTRADA. INTENTE DE NUEVO')
+                            continue
+                        
+                        else:
+                            servicios_en_nota.append(clave_servicio)
+                            
+                            mi_cursor.execute(f"SELECT costo_servicio FROM servicios WHERE clave_servicio={clave_servicio}") 
+                            listacostos=mi_cursor.fetchall()
+                            for costo in listacostos:
+                                total_nota= total_nota + int(costo[0])
+                    except ValueError:
+                        print('INGRESE UN NÚMERO VÁLIDO. INTENTE DE NUEVO')
+                        continue
+                    except Exception as e:
+                        print(f'Ocurrió un error: {e} ')
+                        continue
+                    except sqlite3.Error as e:
+                        print(f'Ocurrió un error de base de datos: {e}')
+                        break             
+            try:
+                estatus='1'
+        
+                with sqlite3.connect ('PIA.db') as conn:
+                    mi_cursor= conn.cursor()
+                    
+                    print(f'\nTotal servicios: {total_nota}')
+                    valores=(fecha_nota, clave_cliente, total_nota, estatus)
+                    mi_cursor.execute("INSERT INTO notas (fecha_nota, clave_cliente, total_nota, estatus) VALUES (?,?,?,?)", valores)
+                    conn.commit()
+                    
+                    folio_nota=mi_cursor.lastrowid           
+                    
+                    for clave_servicio in servicios_en_nota:
+                        valores=(folio_nota, clave_servicio)
+                        mi_cursor.execute("INSERT INTO detalle_notas (folio_nota, clave_servicio) VALUES (?,?)", valores)
+                    
+                    print(f"\nNota registrada correctamente con el folio: {folio_nota}")
+                
+            except Exception as e:
+                print(f'Ocurrió un error: {e} ')
+        
+        def cancelar_nota():
+            while True:
+                try:
+                    folio_cancelado = int(input('Ingrese el folio de la nota a cancelar: '))
+                    if not folio_cancelado:
+                        print('LA OPCIÓN ESTÁ EN BLANCO. INTENTE DE NUEVO.')
+                        continue
+                except ValueError:
+                    print('INGRESE UN NÚMERO VÁLIDO. INTENTE DE NUEVO')
+                    continue
+                
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        mi_cursor.execute(f"SELECT * FROM notas WHERE folio_nota={folio_cancelado} AND estatus='1' ")
+                        folios_cancelados=mi_cursor.fetchall()
+                        if not folios_cancelados:
+                            print('EL FOLIO DE LA NOTA A CANCELAR NO EXISTE O YA HA SIDO CANCELADO.')
+                            break
+                                                
+                        else:
+                            print(f"\nFolio nota\tFecha nota\tClave cliente\tTotal nota\tEstatus")
+                            for folio in folios_cancelados:
+                                fecha_nota = datetime.datetime.strptime(folio[1], '%Y-%m-%d')
+                                fecha_nota_formateada = fecha_nota.strftime('%d-%m-%Y')
+                                
+                                print(f"{folio[0]}\t\t{fecha_nota_formateada}\t\t{folio[2]}\t{folio[3]}\t\t{folio[4]}")   
+                            try:
+                                opcion_cancelar=input('Desea cancelar la nota? SI/NO: ').upper().strip()
+                                if not opcion_cancelar:
+                                    print('LA OPCIÓN ESTÁ EN BLANCO. INTENTE DE NUEVO')
+                                    continue
+                                if opcion_cancelar=="SI":
+                                    with sqlite3.connect ('PIA.db') as conn:
+                                        mi_cursor= conn.cursor()
+                                        mi_cursor.execute(f"UPDATE notas SET estatus='0' WHERE folio_nota={folio_cancelado}")
+                                        conn.commit()
+                                        print('SE CANCELÓ LA NOTA EXITOSAMENTE')
+                                        break
+                                elif opcion_cancelar == "NO":
+                                    print('NO SE CANCELÓ LA NOTA SELECCIONADA')
+                                    break
+                                else:
+                                    print('Opción inválida. Escriba "SI" o "NO". Inténtelo de nuevo.')
+                                    continue
+                            except ValueError:
+                                print('Opción inválida. Escriba "SI" o "NO". Inténtelo de nuevo.')
+
+                except Exception as e:
+                    print(f'Ocurrió un error: {e} ')
+                    continue
+                except sqlite3.Error as e:
+                    print(f'Ocurrió un error de base de datos: {e}')
+                    break
+                
+        def recuperar_nota():  
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        mi_cursor.execute(f"SELECT folio_nota FROM notas WHERE estatus='0' ")
+                        folios_cancelados=mi_cursor.fetchall()
+                        if not folios_cancelados:
+                            print('NO HAY NOTAS ACTUALMENTE CANCELADAS PARA MOSTRAR')
+                            break
+                        else:
+                            print(f"\nFolios de las notas actualmente canceladas:")
+                            for folio in folios_cancelados:
+                                print(f"\t{folio[0]}")                                
+                            try:
+                                folio_recuperar=int(input('Ingrese el folio de la nota a recuperar / Si no se va a recuperar una nota escriba 0: '))
+                                if folio_recuperar == 0:
+                                    print('USTED NO HA RECUPERADO NINGUNA NOTA')
+                                    break
+                                if not folio_recuperar:
+                                    print('EL FOLIO NO SE PUEDE QUEDAR EN BLANCO. INGRESE UN FOLIO VÁLIDO')
+                                    continue
+                                if folio_recuperar not in [folio[0] for folio in folios_cancelados]:
+                                    print('EL FOLIO INGRESADO NO EXISTE EN LAS NOTAS CANCELADAS. INGRESE UN FOLIO VÁLIDO')
+                                    continue
+                            except ValueError:
+                                print('Ingrese un número válido. Inténtelo de nuevo.')
+                            else:
+                                mi_cursor.execute(f"SELECT * FROM notas WHERE folio_nota={folio_recuperar} ")
+                                notas_canceladas=mi_cursor.fetchall()
+                            
+                                print(f"\nFolio nota\tFecha nota\tClave cliente\tTotal nota\tEstatus")
+                                for nota in notas_canceladas:
+                                    fecha_nota = datetime.datetime.strptime(nota[1], '%Y-%m-%d')
+                                    fecha_nota_formateada = fecha_nota.strftime('%d-%m-%Y')
+                                    print(f"{nota[0]}\t\t{fecha_nota_formateada}\t\t{nota[2]}\t{nota[3]}\t\t{nota[4]}")  
+                                  
+                                opcion_recuperar=input('Desea recuperar la nota? SI/NO: ').upper()
+                                if not opcion_recuperar:
+                                    print('LA OPCIÓN ESTÁ EN BLANCO. INTENTE DE NUEVO')
+                                    continue
+                                if opcion_recuperar=='SI':
+                                    for folio in folios_cancelados:
+                                        if folio_recuperar==folio[0]:
+                                            mi_cursor.execute(f"UPDATE notas SET estatus='1' WHERE folio_nota={folio_recuperar}")
+                                            conn.commit()
+                                            print('SE RECUPERÓ LA NOTA')
+                                            break
+                                    break
+                                elif opcion_recuperar=='NO':
+                                    print('NO SE RECUPERÓ LA NOTA SELECCIONADA')
+                                    break
+                                else:
+                                    print('Opción inválida. Escriba "SI" o "NO". Inténtelo de nuevo.')
+                                    continue          
+                except Exception as e:
+                    print(f'Ocurrió un error: {e} ')
+                    continue
+                
+        def consulta_por_periodo_notas():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        
+                        fecha_inicial = input("Ingrese la fecha inicial (DD-MM-AAAA) o presione Enter para usar la fecha 01-01-2000: ")
+                        if fecha_inicial.strip() == '':
+                            fecha_inicial = datetime.date(2000, 1, 1)
+                        else:
+                            fecha_inicial = datetime.datetime.strptime(fecha_inicial, "%d-%m-%Y").date()
+
+                        fecha_final = input("Ingrese la fecha final (DD-MM-AAAA) o presione Enter para usar la fecha actual: ")
+                        if fecha_final.strip() == '':
+                            fecha_final = datetime.date.today()
+                        else:
+                            fecha_final = datetime.datetime.strptime(fecha_final, "%d-%m-%Y").date()
+
+                        if fecha_final < fecha_inicial:
+                            print(f"\nLA FECHA FINAL DEBE SER IGUAL O POSTERIOR A LA FECHA INICIAL, INTENTE DE NUEVO.")
+                            continue
+                        
+                        mi_cursor.execute(f"SELECT * FROM notas WHERE fecha_nota BETWEEN '{fecha_inicial}' AND '{fecha_final}' ")
+                        notas_periodo=mi_cursor.fetchall()
+                        
+                        if not notas_periodo:
+                                print('NO HAY NOTAS CREADAS EN EL PERÍODO.')
+                                break           
+                        else:
+                            print(f"\nNotas encontradas en el período: ")
+                            print(f"\nFolio nota\tFecha nota\tClave cliente\tTotal nota\tEstatus")
+                            for nota in notas_periodo:
+                                fecha_nota = datetime.datetime.strptime(nota[1], '%Y-%m-%d')
+                                fecha_nota_formateada = fecha_nota.strftime('%d-%m-%Y')
+                                print(f"{nota[0]}\t\t{fecha_nota_formateada}\t\t{nota[2]}\t${nota[3]}\t\t{nota[4]}") 
+                            
+                            mi_cursor.execute(f"SELECT total_nota FROM notas WHERE fecha_nota BETWEEN '{fecha_inicial}' AND '{fecha_final}' ")
+                            notas_periodo_monto_promedio=mi_cursor.fetchall()
+                            
+                            monto_notas=0
+                            for costo in notas_periodo_monto_promedio:
+                                monto_notas= monto_notas + int(costo[0])
+                            
+                            promedio_notas=monto_notas / len(notas_periodo_monto_promedio)
+                            print(f"\nEl monto promedio de las notas en el período es de: ${promedio_notas:.2f}")
+                            
+                            print(f"\nOpciones de exportación:")
+                            print(f"1. Excel")
+                            print(f"2. CSV")
+                            print(f"3. Volver a menú de reportes")
+                
+                            opcion_exportar=int(input(f'\nOpción a elegir: '))
+                            match opcion_exportar:
+                                case 1:
+                                    exportar_a_excel_notas(fecha_inicial, fecha_final, promedio_notas)
+                                    break
+                                
+                                case 2:
+                                    fecha_inicial_db = fecha_inicial.strftime("%d-%m-%Y")
+                                    fecha_final_db = fecha_final.strftime("%d-%m-%Y")
+                                    
+                                    nombre_archivo_csv=f"ReportePorPeriodo_{fecha_inicial_db}_{fecha_final_db}.csv"
+                                    with open(nombre_archivo_csv, 'w', newline='') as file:
+                                        writer = csv.writer(file)
+                                        writer.writerow(["Folio nota", "Fecha nota", "Clave Cliente", "Total nota", "Estatus"])
+
+                                        for nota in notas_periodo:
+                                            fecha_nota = datetime.datetime.strptime(nota[1], '%Y-%m-%d')
+                                            fecha_nota_formateada = fecha_nota.strftime('%d-%m-%Y')
+                                            writer.writerow([nota[0], fecha_nota_formateada, nota[2], nota[3], nota[4]])
+                                            
+                                        writer.writerow(["Promedio de las notas en el periodo: ", promedio_notas])
+                                        
+                                        print(f"Se ha exportado la información a '{nombre_archivo_csv}'.")
+                                        break
+                                        
+                                case 3:
+                                    print('Volviendo al menú de reportes.')
+                                    break
+                                case _:
+                                    print("Opción no válida. Por favor, ingrese un número del 1 al 3.")
+                                    
+                except ValueError:
+                    print("Formato de fecha incorrecto.")
+                    continue
+
+                except Exception as e:
+                    print(f"Ocurrió un error: {str(e)}")
+
+        def exportar_a_excel_notas(fecha_inicial, fecha_final, promedio_notas):
+            workbook = openpyxl.Workbook()
+            sheet = workbook.active
+            sheet.title = "Notas_Periodo"
+
+            sheet['A1'] = "Folio nota"
+            sheet['B1'] = "Fecha nota"
+            sheet['C1'] = "Clave Cliente"
+            sheet['D1'] = "Total nota"
+            sheet['E1'] = "Estatus"
+            sheet['F1'] = "Promedio notas en el período"
+
+            row = 2
+            with sqlite3.connect ('PIA.db') as conn:
+                mi_cursor= conn.cursor()
+                mi_cursor.execute(f"SELECT * FROM notas WHERE fecha_nota BETWEEN '{fecha_inicial}' AND '{fecha_final}' ")
+                notas_periodo_db=mi_cursor.fetchall()
+
+                for nota in notas_periodo_db:
+                    fecha_nota = datetime.datetime.strptime(nota[1], '%Y-%m-%d')
+                    fecha_nota_formateada = fecha_nota.strftime('%d-%m-%Y')
+                    sheet[f'A{row}'] = nota[0]
+                    sheet[f'B{row}'] = fecha_nota_formateada
+                    sheet[f'C{row}'] = nota[2]
+                    sheet[f'D{row}'] = nota[3]
+                    sheet[f'E{row}'] = nota[4]
+                    row += 1
+                sheet[f'F{row}'] = promedio_notas
+                
+            fecha_inicial_db = fecha_inicial.strftime("%d-%m-%Y")
+            fecha_final_db = fecha_final.strftime("%d-%m-%Y")
+            
+            nombre_archivo_excel = f"ReportePorPeriodo_{fecha_inicial_db}_{fecha_final_db}.xlsx"
+            workbook.save(nombre_archivo_excel)
+            print(f"Se ha exportado la información a '{nombre_archivo_excel}'.")
+        
+        def consultar_por_folio_notas():
+            with sqlite3.connect ('PIA.db') as conn:
+                mi_cursor= conn.cursor()
+                mi_cursor.execute(f"SELECT notas.folio_nota, notas.fecha_nota, clientes.nombre_cliente FROM notas INNER JOIN clientes ON notas.clave_cliente=clientes.clave_cliente ORDER BY notas.folio_nota ")
+                notas_folio=mi_cursor.fetchall()
+                if not notas_folio:
+                    print(f'\nNO HAY NOTAS PARA MOSTRAR')
+                    return
+                else:
+                    print(f"\nCONSULTA POR FOLIO: ")
+                    print(f"Folio nota\tFecha nota\tNombre cliente")
+                    for nota in notas_folio:
+                        fecha_nota = datetime.datetime.strptime(nota[1], '%Y-%m-%d')
+                        fecha_nota_formateada = fecha_nota.strftime('%d-%m-%Y')                        
+                        print(f"{nota[0]}\t\t{fecha_nota_formateada}\t{nota[2]}")
+                    while True:    
+                        try:
+                            folio_consulta_notas=int(input(f'\nIngrese el folio de la nota a consultar / Si no se va a consultar una nota escriba 0: '))
+                            if folio_consulta_notas == 0:
+                                print('USTED HA DECIDIDO NO CONSULTAR NINGUNA NOTA')
+                                break
+                            if not folio_consulta_notas:
+                                print('EL FOLIO NO SE PUEDE QUEDAR EN BLANCO. POR FAVOR, INGRESE UN FOLIO VÁLIDO.')
+                                continue
+                            
+                            with sqlite3.connect ('PIA.db') as conn:
+                                mi_cursor= conn.cursor()
+                                mi_cursor.execute(f"SELECT notas.folio_nota, notas.fecha_nota, clientes.clave_cliente, clientes.nombre_cliente, clientes.RFC, clientes.correo_cliente, detalle_notas.id_detalle, servicios.nombre_servicio, servicios.costo_servicio, notas.estatus \
+                                                    FROM notas \
+                                                    INNER JOIN clientes ON notas.clave_cliente = clientes.clave_cliente\
+                                                    INNER JOIN detalle_notas ON notas.folio_nota = detalle_notas.folio_nota\
+                                                    INNER JOIN servicios ON detalle_notas.clave_servicio = servicios.clave_servicio WHERE notas.folio_nota={folio_consulta_notas} AND notas.estatus='1' ")              
+                                
+                                notas_folio=mi_cursor.fetchall()
+                                if folio_consulta_notas not in [nota[0] for nota in notas_folio]:
+                                    print('La nota no se encuentra en el sistema. Por favor, ingrese un folio válido.')
+                                    continue
+                                else:
+                                    print("\n{:<12}\t{:<14}\t{:<13}\t{:<16}\t{:<11}\t{:<19}\t{:<15}\t\t{:<20}\t{:<15}\t{:<12}".format("Folio nota", "Fecha nota", "Clave cliente", "Nombre cliente", "RFC cliente", "Correo cliente", "ID detalle nota", "Servicio realizado", "Costo servicio", "Estatus nota"))
+                                    for nota in notas_folio:
+                                        fecha_nota = datetime.datetime.strptime(nota[1], '%Y-%m-%d')
+                                        fecha_nota_formateada = fecha_nota.strftime('%d-%m-%Y')
+                                        print("{:<12}\t{:<14}\t{:<13}\t{:<16}\t{:<11}\t{:<19}\t{:<15}\t\t{:<20}\t${:.2f}\t\t{:<12}".format(nota[0], fecha_nota_formateada, nota[2], nota[3], nota[4], nota[5], nota[6], nota[7], nota[8], nota[9]))
+                                    break
+
+                        except ValueError:
+                            print('Ingrese un número válido. Inténtelo de nuevo.')
+                            
+                            
+        def servicios_mas_prestados():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        cantidad_servicios = int(input(f"\nIngrese la cantidad de servicios más solicitados a identificar (mínimo 1): "))
+                        
+                        while True:
+                            fecha_inicial = input("Ingrese la fecha inicial del período a reportar (DD-MM-AAAA): ")
+                            try: 
+                                fecha_inicial = datetime.datetime.strptime(fecha_inicial, "%d-%m-%Y").date()
+                                break
+                            except ValueError:
+                                print(f'\nFORMATO DE FECHA INCORRECTO. INTENTE DE NUEVO.')
+                                continue
+                            
+                        while True:
+                            fecha_final = input("Ingrese la fecha final del período a reportar (DD-MM-AAAA): ")
+                            try:
+                                fecha_final = datetime.datetime.strptime(fecha_final, "%d-%m-%Y").date()
+                                break
+                            except ValueError:
+                                print(f'\nFORMATO DE FECHA INCORRECTO. INTENTE DE NUEVO.')
+                                continue
+                        
+                        if fecha_final < fecha_inicial:
+                            print(f"\nLA FECHA FINAL DEBE SER IGUAL O POSTERIOR A LA FECHA INICIAL, INTENTE DE NUEVO.")
+                            continue
+                        
+                        else:
+                            consulta = (f"SELECT S.nombre_servicio, COUNT(D.clave_servicio) as Veces_Servicios \
+                                        FROM detalle_notas D \
+                                        JOIN servicios S ON D.clave_servicio = S.clave_servicio \
+                                        JOIN notas N ON D.folio_nota = N.folio_nota \
+                                        WHERE N.fecha_nota BETWEEN '{fecha_inicial}' AND '{fecha_final}' \
+                                        GROUP BY S.nombre_servicio \
+                                        ORDER BY Veces_Servicios DESC \
+                                        LIMIT {cantidad_servicios} ")
+                            
+                            mi_cursor.execute(consulta)
+                            servicios_mas_prestados=mi_cursor.fetchall()
+                            if not servicios_mas_prestados:
+                                print(f'\nNO HAY SERVICIOS PRESTADOS EN ESE PERÍODO.')
+                                break
+                            else:
+                                print("\nServicios más solicitados:")
+                                print("Servicio:\t\t\tVeces:")
+                                for servicio in servicios_mas_prestados:
+                                    print("{:<30}\t{}".format(servicio[0], servicio[1]))
+                                    
+                                print(f"\nOpciones de exportación:")
+                                print(f"1. Excel")
+                                print(f"2. CSV")
+                                print(f"3. Volver a menú de reportes")
+                                
+                                opcion_exportar=int(input(f'\nOpción a elegir: '))
+                                match opcion_exportar:
+                                    case 1:
+                                        workbook = openpyxl.Workbook()
+                                        sheet = workbook.active
+                                        sheet.title = "Servicios_Mas_Prestados"
+
+                                        sheet['A1'] = "Nombre servicio"
+                                        sheet['B1'] = "Cantidad veces"
+
+                                        row = 2
+                                        for servicio in servicios_mas_prestados:
+                                            sheet[f'A{row}'] = servicio[0]
+                                            sheet[f'B{row}'] = servicio[1]
+                                            row+=1
+
+                                        fecha_reporte_inicial = fecha_inicial.strftime("%d-%m-%Y")
+                                        fecha_reporte_final = fecha_final.strftime("%d-%m-%Y")    
+
+                                        nombre_archivo_excel = f"ReporteServiciosMasPrestados_{fecha_reporte_inicial}_{fecha_reporte_final}.xlsx"
+                                        workbook.save(nombre_archivo_excel)
+                                        print(f"Se ha exportado la información a '{nombre_archivo_excel}'.")      
+                                        break
+                                    
+                                    case 2:
+                                        fecha_reporte_inicial = fecha_inicial.strftime("%d-%m-%Y")
+                                        fecha_reporte_final = fecha_final.strftime("%d-%m-%Y")
+                                        
+                                        nombre_archivo_csv=f"ReporteServiciosMasPrestados_{fecha_reporte_inicial}_{fecha_reporte_final}.csv"
+                                        with open(nombre_archivo_csv, 'w', newline='') as file:
+                                            writer = csv.writer(file)
+                                            writer.writerow(["Nombre servicio", "Cantidad Veces"])
+                                            for servicio in servicios_mas_prestados:
+                                                writer.writerow([servicio[0], servicio[1]])
+                                            
+                                            print(f"Se ha exportado la información a '{nombre_archivo_csv}'.")
+                                            break         
+                                    case 3:
+                                        print('VOLVIENDO AL MENÚ DE ESTADÍSTICOS.')
+                                        break
+                                    case _:
+                                        print("OPCIÓN NO VÁLIDA. INGRESE UN NÚMERO DEL 1 AL 3.")        
+                except ValueError:
+                    print('Valor inválido. Intente de nuevo')
+                    continue                
+                
+        def servicios_mas_prestados():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        while True:
+                            cantidad_servicios = int(input(f"\nIngrese la cantidad de clientes con más notas a identificar (mínimo 1): "))
+                            if cantidad_servicios==0:
+                                print('EL MÍNIMO ES 1. INTENTE DE NUEVO.')
+                                continue
+                            else:
+                                break
+                        
+                        while True:
+                            fecha_inicial = input("Ingrese la fecha inicial del período a reportar (DD-MM-AAAA): ")
+                            try: 
+                                fecha_inicial = datetime.datetime.strptime(fecha_inicial, "%d-%m-%Y").date()
+                                break
+                            except ValueError:
+                                print(f'\nFORMATO DE FECHA INCORRECTO. INTENTE DE NUEVO.')
+                                continue
+                            
+                        while True:
+                            fecha_final = input("Ingrese la fecha final del período a reportar (DD-MM-AAAA): ")
+                            try:
+                                fecha_final = datetime.datetime.strptime(fecha_final, "%d-%m-%Y").date()
+                                break
+                            except ValueError:
+                                print(f'\nFORMATO DE FECHA INCORRECTO. INTENTE DE NUEVO.')
+                                continue
+                        
+
+                        if fecha_final < fecha_inicial:
+                            print(f"\nLA FECHA FINAL DEBE SER IGUAL O POSTERIOR A LA FECHA INICIAL, INTENTE DE NUEVO.")
+                            continue
+                        
+                        else:
+                            consulta = (f"SELECT S.nombre_servicio, COUNT(D.clave_servicio) as Veces_Servicios \
+                                        FROM detalle_notas D \
+                                        JOIN servicios S ON D.clave_servicio = S.clave_servicio \
+                                        JOIN notas N ON D.folio_nota = N.folio_nota \
+                                        WHERE N.fecha_nota BETWEEN '{fecha_inicial}' AND '{fecha_final}' \
+                                        GROUP BY S.nombre_servicio \
+                                        ORDER BY Veces_Servicios DESC \
+                                        LIMIT {cantidad_servicios} ")                            
+                            mi_cursor.execute(consulta)
+                            servicios_mas_prestados=mi_cursor.fetchall()
+                            if not servicios_mas_prestados:
+                                print(f'\nNO HAY SERVICIOS PRESTADOS EN ESE PERÍODO.')
+                                break
+                            else:
+                                print("\nServicios más solicitados:")
+                                print("Servicio:\t\t\tVeces:")
+                                for servicio in servicios_mas_prestados:
+                                    print("{:<30}\t{}".format(servicio[0], servicio[1]))
+                                    
+                                print(f"\nOpciones de exportación:")
+                                print(f"1. Excel")
+                                print(f"2. CSV")
+                                print(f"3. Volver a menú de estadísticos")
+                                
+                                opcion_exportar=int(input(f'\nOpción a elegir: '))
+                                match opcion_exportar:
+                                    case 1:
+                                        workbook = openpyxl.Workbook()
+                                        sheet = workbook.active
+                                        sheet.title = "Servicios_Mas_Prestados"
+
+                                        sheet['A1'] = "Nombre servicio"
+                                        sheet['B1'] = "Cantidad veces"
+
+                                        row = 2
+                                        for servicio in servicios_mas_prestados:
+                                            sheet[f'A{row}'] = servicio[0]
+                                            sheet[f'B{row}'] = servicio[1]
+                                            row+=1
+
+                                        fecha_reporte_inicial = fecha_inicial.strftime("%d-%m-%Y")
+                                        fecha_reporte_final = fecha_final.strftime("%d-%m-%Y")    
+
+                                        nombre_archivo_excel = f"ReporteServiciosMasPrestados_{fecha_reporte_inicial}_{fecha_reporte_final}.xlsx"
+                                        workbook.save(nombre_archivo_excel)
+                                        print(f"Se ha exportado la información a '{nombre_archivo_excel}'.")      
+                                        break
+                                    case 2:
+                                        fecha_reporte_inicial = fecha_inicial.strftime("%d-%m-%Y")
+                                        fecha_reporte_final = fecha_final.strftime("%d-%m-%Y")
+                                        
+                                        nombre_archivo_csv=f"ReporteServiciosMasPrestados_{fecha_reporte_inicial}_{fecha_reporte_final}.csv"
+                                        with open(nombre_archivo_csv, 'w', newline='') as file:
+                                            writer = csv.writer(file)
+                                            writer.writerow(["Nombre servicio", "Cantidad Veces"])
+                                            for servicio in servicios_mas_prestados:
+                                                writer.writerow([servicio[0], servicio[1]])
+                                            
+                                            print(f"Se ha exportado la información a '{nombre_archivo_csv}'.")
+                                            break         
+                                    case 3:
+                                        print('VOLVIENDO AL MENÚ DE ESTADÍSTICOS.')
+                                        break
+                                    case _:
+                                        print("OPCIÓN NO VÁLIDA. INGRESE UN NÚMERO DEL 1 AL 3.")        
+                except ValueError:
+                    print('Valor inválido. Intente de nuevo')
+                    continue
+                
+        def clientes_con_mas_notas():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()
+                        while True:
+                            cantidad_clientes = int(input(f"\nIngrese la cantidad de clientes con más notas a identificar (mínimo 1): "))
+                            if cantidad_clientes==0:
+                                print('EL MÍNIMO ES 1. INTENTE DE NUEVO.')
+                                continue
+                            else:
+                                break
+                        
+                        while True:
+                            fecha_inicial = input("Ingrese la fecha inicial del período a reportar (DD-MM-AAAA): ")
+                            try: 
+                                fecha_inicial = datetime.datetime.strptime(fecha_inicial, "%d-%m-%Y").date()
+                                break
+                            except ValueError:
+                                print(f'\nFORMATO DE FECHA INCORRECTO. INTENTE DE NUEVO.')
+                                continue
+                            
+                        while True:
+                            fecha_final = input("Ingrese la fecha final del período a reportar (DD-MM-AAAA): ")
+                            try:
+                                fecha_final = datetime.datetime.strptime(fecha_final, "%d-%m-%Y").date()
+                                break
+                            except ValueError:
+                                print(f'\nFORMATO DE FECHA INCORRECTO. INTENTE DE NUEVO.')
+                                continue
+                        
+                        if fecha_final < fecha_inicial:
+                            print(f"\nLA FECHA FINAL DEBE SER IGUAL O POSTERIOR A LA FECHA INICIAL, INTENTE DE NUEVO.")
+                            continue
+                        
+                        else:                            
+                            consulta = (f"SELECT C.nombre_cliente, COUNT(N.folio_nota) as Cant_Notas_Clientes \
+                                        FROM clientes C \
+                                        JOIN notas N ON C.clave_cliente = N.clave_cliente \
+                                        WHERE N.fecha_nota BETWEEN '{fecha_inicial}' AND '{fecha_final}' \
+                                        GROUP BY c.nombre_cliente \
+                                        ORDER BY Cant_Notas_Clientes DESC \
+                                        LIMIT {cantidad_clientes}")
+                            
+                            mi_cursor.execute(consulta)
+                            clientes_con_mas_notas=mi_cursor.fetchall()
+                            if not clientes_con_mas_notas:
+                                print(f'\nNO HAY CLIENTES CON NOTAS EN ESE PERÍODO.')
+                                break
+                            else:
+                                print("\nClientes con más notas:")
+                                print("Nombre cliente:\t\t\tCantidad Notas:")
+                                for cliente in clientes_con_mas_notas:
+                                    print("{:<30}\t{}".format(cliente[0], cliente[1]))
+                                    
+                                print(f"\nOpciones de exportación:")
+                                print(f"1. Excel")
+                                print(f"2. CSV")
+                                print(f"3. Volver a menú de estadísticos")
+                                
+                                opcion_exportar=int(input(f'\nOpción a elegir: '))
+                                match opcion_exportar:
+                                    case 1:
+                                        workbook = openpyxl.Workbook()
+                                        sheet = workbook.active
+                                        sheet.title = "Clientes_Con_Mas_Notas"
+
+                                        sheet['A1'] = "Nombre cliente"
+                                        sheet['B1'] = "Cantidad Notas"
+
+                                        row = 2
+                                        for cliente in clientes_con_mas_notas:
+                                            sheet[f'A{row}'] = cliente[0]
+                                            sheet[f'B{row}'] = cliente[1]
+                                            row+=1
+
+                                        fecha_reporte_inicial = fecha_inicial.strftime("%d-%m-%Y")
+                                        fecha_reporte_final = fecha_final.strftime("%d-%m-%Y")    
+
+                                        nombre_archivo_excel = f"ReporteClientesConMasNotas_{fecha_reporte_inicial}_{fecha_reporte_final}.xlsx"
+                                        workbook.save(nombre_archivo_excel)
+                                        print(f"Se ha exportado la información a '{nombre_archivo_excel}'.")      
+                                        break
+                                    
+                                    case 2:
+                                        fecha_reporte_inicial = fecha_inicial.strftime("%d-%m-%Y")
+                                        fecha_reporte_final = fecha_final.strftime("%d-%m-%Y")
+                                        
+                                        nombre_archivo_csv=f"ReporteClientesConMasNotas_{fecha_reporte_inicial}_{fecha_reporte_final}.csv"
+                                        with open(nombre_archivo_csv, 'w', newline='') as file:
+                                            writer = csv.writer(file)
+                                            writer.writerow(["Nombre cliente", "Cantidad Notas"])
+                                            for cliente in clientes_con_mas_notas:
+                                                writer.writerow([cliente[0], cliente[1]])
+                                            
+                                            print(f"Se ha exportado la información a '{nombre_archivo_csv}'.")
+                                            break         
+                                    case 3:
+                                        print('VOLVIENDO AL MENÚ DE ESTADÍSTICOS.')
+                                        break
+                                    case _:
+                                        print("OPCIÓN NO VÁLIDA. INGRESE UN NÚMERO DEL 1 AL 3.")        
+                except ValueError:
+                    print('Valor inválido. Intente de nuevo')
+                    continue
+        
+        def promedio_montos_notas():
+            while True:
+                try:
+                    with sqlite3.connect ('PIA.db') as conn:
+                        mi_cursor= conn.cursor()                        
+                        while True:
+                            fecha_inicial = input("Ingrese la fecha inicial del período a reportar (DD-MM-AAAA): ")
+                            try: 
+                                fecha_inicial = datetime.datetime.strptime(fecha_inicial, "%d-%m-%Y").date()
+                                break
+                            except ValueError:
+                                print(f'\nFORMATO DE FECHA INCORRECTO. INTENTE DE NUEVO.')
+                                continue
+                            
+                        while True:
+                            fecha_final = input("Ingrese la fecha final del período a reportar (DD-MM-AAAA): ")
+                            try:
+                                fecha_final = datetime.datetime.strptime(fecha_final, "%d-%m-%Y").date()
+                                break
+                            except ValueError:
+                                print(f'\nFORMATO DE FECHA INCORRECTO. INTENTE DE NUEVO.')
+                                continue
+                        
+
+                        if fecha_final < fecha_inicial:
+                            print(f"\nLA FECHA FINAL DEBE SER IGUAL O POSTERIOR A LA FECHA INICIAL, INTENTE DE NUEVO.")
+                            continue
+                        
+                        else:                            
+                            consulta = (f"SELECT N.folio_nota, N.total_nota \
+                                        FROM notas N \
+                                        WHERE N.fecha_nota BETWEEN '{fecha_inicial}' AND '{fecha_final}' \
+                                        ORDER BY N.total_nota DESC")
+                            
+                            mi_cursor.execute(consulta)
+                            promedio_montos_notas=mi_cursor.fetchall()
+                            if not promedio_montos_notas:
+                                print(f'\nNO HAY NOTAS EN ESE PERÍODO.')
+                                break
+                            else:
+                                print(f"\nNotas encontradas en el período:")
+                                print(f"Folio nota:\t\t\tTotal Nota:")
+                                for nota in promedio_montos_notas:
+                                    print("{:<30}\t${}".format(nota[0], nota[1]))
+                                
+                                monto_notas=0
+                                for costo in promedio_montos_notas:
+                                    monto_notas= monto_notas + int(costo[1])
+                                
+                                promedio_notas=monto_notas / len(promedio_montos_notas)
+                                print(f"\nEl monto promedio de las notas en el período es de: ${promedio_notas:.2f}")
+                                break
+                                
+                except ValueError:
+                    print('Valor inválido. Intente de nuevo')
+                    continue                                                                
+except Error as e:
+    print (e)
+except Exception:
+    print(f"Se produjo el siguiente error: {sys.exc_info()[0]}")
+finally:
+    conn.close()
+  
+  
+  
+try:
+    while True:
+        print("\nBienvenid@ al Taller Mecánico NEW YORK")
+        print("Menú Principal:")
+        print("1. Notas")
+        print("2. Clientes")
+        print("3. Servicios")
+        print("4. Estadísticos")
+        print("5. Salir")
+        
+        try:
+            opcion_menu = int(input("Seleccione una opción: "))
+
+            if opcion_menu == 1:
+                while True:
+                    try:
+                        print("\nSubMenu Notas:")
+                        print("1. Registrar una nota")
+                        print("2. Cancelar una nota")
+                        print("3. Recuperar una nota")
+                        print("4. Consultas y reportes de notas")
+                        print("5. Volver al menú principal")
+
+                        opcion_submenu_notas = int(input("Seleccione una opción: "))
+
+                        if opcion_submenu_notas == 1:
+                            registrar_nota()
+                        elif opcion_submenu_notas == 2:
+                            cancelar_nota()
+                        elif opcion_submenu_notas == 3:
+                            recuperar_nota()
+                        elif opcion_submenu_notas == 4:
+                            while True:
+                                try:
+                                    print(f"\n1. Consulta por período")
+                                    print("2. Consulta por folio")
+                                    print("3. Volver al menú de notas")
+
+                                    opcion_submenu_consultas_notas = int(input("Seleccione una opción: "))
+
+                                    if opcion_submenu_consultas_notas == 1:
+                                        consulta_por_periodo_notas()
+                                    elif opcion_submenu_consultas_notas == 2:
+                                        consultar_por_folio_notas()
+                                    elif opcion_submenu_consultas_notas == 3:
+                                         break
+                                    else:
+                                        print("Opción no válida.")
+                                except ValueError:
+                                    print('Ingrese un número válido. Intente de nuevo')
+                                    continue
+                                
+                        elif opcion_submenu_notas== 5:
+                            break
+                        else:
+                            print("Opción no válida.")
+                    except ValueError:
+                        print('Ingrese un número válido. Intente de nuevo')
+                        continue
+                                                    
+            elif opcion_menu == 2:
+                while True:
+                    print("\nSubMenu Clientes:")
+                    print("1. Agregar un cliente")
+                    print("2. Suspender un cliente")
+                    print("3. Recuperar un cliente")
+                    print("4. Consultas y reportes de clientes")
+                    print("5. Volver al menú principal")
+
+                    opcion_submenu_clientes = int(input("Seleccione una opción: "))
+
+                    if opcion_submenu_clientes == 1:
+                        agregar_cliente()
+                    elif opcion_submenu_clientes == 2:
+                        suspender_cliente()
+                    elif opcion_submenu_clientes == 3:
+                        recuperar_cliente()
+                    elif opcion_submenu_clientes == 4:
+                        while True:
+                            print(f"\nSubMenú:")
+                            print("1. Listado de clientes registrados")
+                            print("2. Búsqueda por clave")
+                            print("3. Búsqueda por nombre")
+                            print("4. Volver al menú de clientes")
+
+                            opcion_submenu_listado_clientes = int(input("Seleccione una opción: "))
+
+                            if opcion_submenu_listado_clientes == 1:
+                                while True:
+                                    print("\nListado de clientes:")
+                                    print("1. Ordenado por clave")
+                                    print("2. Ordenado por nombre")
+                                    print("3. Volver al listado de clientes")
+
+                                    opcion_orden_listado_clientes = int(input("Seleccione una opción: "))
+
+                                    if opcion_orden_listado_clientes == 1:
+                                        ordenar_cliente_por_clave()
+                                    elif opcion_orden_listado_clientes == 2:
+                                        ordenar_cliente_por_nombre()
+                                    elif opcion_orden_listado_clientes == 3:
+                                        break
+                                    else:
+                                        print("Opción no válida.")
+                                        
+                            elif opcion_submenu_listado_clientes == 2:
+                                buscar_cliente_por_clave()
+
+                            elif opcion_submenu_listado_clientes == 3:
+                                buscar_cliente_por_nombre()
+
+                            elif opcion_submenu_listado_clientes == 4:
+                                break
+                            else:
+                                print("Opción no válida.")
+                        else:
+                            print("Opción no válida.")
+                    elif opcion_submenu_clientes == 5:
+                        break
+                    else:
+                        print("Opción no válida.")
+
+                               
+            elif opcion_menu == 3:
+                while True:
+                    print("\nSubMenu Servicios:")
+                    print("1. Agregar un servicio")
+                    print("2. Suspender un servicio")
+                    print("3. Recuperar un servicio")
+                    print("4. Consultas y reportes de servicios")
+                    print("5. Volver al menú principal")
+
+                    opcion_submenu_servicios = int(input("Seleccione una opción: "))
+
+                    if opcion_submenu_servicios == 1:
+                        agregar_servicio()
+                        
+                    elif opcion_submenu_servicios == 2:
+                        suspender_servicio()
+
+                    elif opcion_submenu_servicios == 3:
+                        recuperar_servicio()
+
+                    elif opcion_submenu_servicios == 4:
+                        while True:
+                            print("\nSubMenú Consultas y reportes de servicios:")
+                            print("1. Búsqueda por clave de servicio")
+                            print("2. Búsqueda por nombre de servicio")
+                            print("3. Listado de servicios registrados")
+                            print("4. Volver al menú de servicios")
+
+                            opcion_submenu_consultas_servicios = int(input("Seleccione una opción: "))
+
+                            if opcion_submenu_consultas_servicios == 1:
+                                buscar_servicio_por_clave()
+                            elif opcion_submenu_consultas_servicios == 2:
+                                buscar_servicio_por_nombre()
+                            elif opcion_submenu_consultas_servicios == 3:
+                                while True:
+                                    print("Listado de servicios:")
+                                    print("1. Ordenado por clave de servicio")
+                                    print("2. Ordenado por nombre de servicio")
+                                    print("3. Volver al listado de servicios")
+
+                                    opcion_submenu_orden_servicios = int(input("Seleccione una opción: "))
+
+                                    if opcion_submenu_orden_servicios == 1:
+                                        ordenar_servicio_por_clave()
+                                        
+                                    elif opcion_submenu_orden_servicios == 2:
+                                        ordenar_servicio_por_nombre()
+                                        
+                                    elif opcion_submenu_orden_servicios == 3:
+                                        break
+                                    else:
+                                        print("Opción no válida.")
+                            elif opcion_submenu_consultas_servicios == 4:
+                                break
+                            else:
+                                print("Opción no válida.")
+                        else:
+                            print("Opción no válida.")
+                    elif opcion_submenu_servicios == 5:
+                        break
+                    else:
+                        print("Opción no válida.")
+            
+            elif opcion_menu == 4:
+                while True:
+                    print("\nEstadísticos:")
+                    print("1. Servicios más prestados")
+                    print("2. Clientes con más notas")
+                    print("3. Promedio de los montos de las notas")
+                    print("4. Volver al menú principal")
+
+                    opcion_estadisticos = int(input("Seleccione una opción: "))
+
+                    if opcion_estadisticos == 1:
+                        servicios_mas_prestados()
+
+                    elif opcion_estadisticos == 2:
+                        clientes_con_mas_notas()
+
+                    elif opcion_estadisticos == 3:
+                        promedio_montos_notas()
+                        
+                    elif opcion_estadisticos == 4:
+                        break  
+                    else:
+                        print("Opción no válida.")
+                        
+            elif opcion_menu == 5:
+                try:
+                    salida_menu=input('Desea salir de la solución: SI/NO: ').strip().upper()
+                    if salida_menu=='SI':
+                        break
+                    if salida_menu=='NO':
+                        continue
+                    else:
+                        print('Opción inválida. INTENTE DE NUEVO')
+                        continue
+                    
+                except Exception:
+                    print(f"Se produjo el siguiente error: {sys.exc_info()[0]}")
+                    
+            else:
+                print("Opción no válida.")
+                continue
+            
+        except ValueError:
+            print('Ingrese un número válido. Inténtelo de nuevo.')
+            continue
+            
+except Exception:
+    print(f"Se produjo el siguiente error: {sys.exc_info()[0]}")
+except ValueError:
+    print('Ingrese un número válido. Inténtelo de nuevo.')
+
