@@ -1,1 +1,85 @@
+from datetime import date, datetime
+import sys
+import sqlite3
+from sqlite3 import Error
+import datetime
+import openpyxl
+import csv
+import re
 
+try:
+    with sqlite3.connect ('PIA.db') as conn:
+        mi_cursor=conn.cursor()
+        mi_cursor.execute("CREATE TABLE IF NOT EXISTS clientes \
+        (clave_cliente INTEGER PRIMARY KEY, nombre_cliente TEXT NOT NULL, RFC TEXT NOT NULL, correo_cliente TEXT NOT NULL, estatus TEXT NOT NULL);") 
+
+        mi_cursor.execute("CREATE TABLE IF NOT EXISTS servicios \
+        (clave_servicio INTEGER PRIMARY KEY, nombre_servicio TEXT NOT NULL, costo_servicio NUMBER, estatus TEXT NOT NULL);")
+
+        mi_cursor.execute("CREATE TABLE IF NOT EXISTS notas (folio_nota INTEGER PRIMARY KEY, fecha_nota timestamp, clave_cliente INTEGER NOT NULL, total_nota NUMBER, estatus TEXT NOT NULL, FOREIGN KEY (clave_cliente) REFERENCES clientes (clave_cliente));")
+        
+        mi_cursor.execute("CREATE TABLE IF NOT EXISTS detalle_notas (id_detalle INTEGER PRIMARY KEY, folio_nota INTEGER NOT NULL, clave_servicio INTEGER NOT NULL, FOREIGN KEY (folio_nota) REFERENCES NOTAS (folio_nota), FOREIGN KEY (clave_servicio) REFERENCES servicios (clave_servicio));")
+       
+        print ('Tablas creadas en la base de datos exitosamente')
+        
+        def agregar_cliente():
+            while True:
+                try:
+                    nombre_cliente=input("Ingrese el nombre del cliente: ").strip()
+                    nombre_cliente=nombre_cliente.title()
+                    if not nombre_cliente.strip():
+                        print('NO SE PUEDE QUEDAR EL NOMBRE DEL CLIENTE EN BLANCO, INTENTE DE NUEVO')
+                        continue
+                    if nombre_cliente.isdigit():
+                        print('EL NOMBRE DEL CLIENTE NO PUEDE SER UN NÚMERO, INTENTE DE NUEVO')
+                        continue
+                    else:
+                        break
+                except ValueError:
+                    print('Ingrese un nombre válido. Intentélo de nuevo.')
+                    continue
+                
+            while True:
+                try:
+                    RFC=input("Ingrese el RFC del cliente (formato: ABCD123456XXX): ").strip().upper()
+                    if RFC.strip() == '':
+                        print("NO ES POSIBLE DEJAR EL RFC EN BLANCO, INTENTE DE NUEVO")
+                        continue
+                    if not re.match(r'^[A-Z&Ñ]{4}(0[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-3])(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[0-9A-Z]{3}$', RFC):
+                        print(f"\nEL FORMATO DEL RFC ES INCORRECTO, INTENTE DE NUEVO (formato: ABCD123456XXX)")
+                        continue
+                    else:
+                        break
+                except ValueError:
+                    print('Ingrese un nombre válido. Intentélo de nuevo.')
+                    continue
+                
+            while True:
+                try:
+                    correo_cliente=input("Ingrese el correo electrónico del cliente (formato: tunombre@ejemplo.com): ")
+                    validacion=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$"                   
+                    
+                    if correo_cliente.strip() == '':
+                        print("NO ES POSIBLE DEJAR EL CORREO EN BLANCO, INTENTE DE NUEVO")
+                        continue
+                    
+                    if not re.match(validacion, correo_cliente):
+                        print("EL FORMATO DEL CORREO ES INCORRECTO, INTENTE DE NUEVO")
+                        continue
+                    
+                    else:
+                        estatus= '1'
+                        with sqlite3.connect ('PIA.db') as conn:
+                            mi_cursor= conn.cursor()                            
+                            valores=(nombre_cliente, RFC, correo_cliente, estatus)
+                            mi_cursor.execute("INSERT INTO clientes (nombre_cliente, RFC, correo_cliente, estatus) VALUES (?,?,?,?)", valores)
+                            conn.commit()
+                            
+                            clave_cliente=mi_cursor.lastrowid
+                            print(f'Se registró el cliente con la clave: {clave_cliente}')
+                            break
+                                     
+                except ValueError:
+                    print('Ingrese un correo válido. Intentélo de nuevo.')
+                    continue
+                
