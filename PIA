@@ -831,7 +831,7 @@ try:
                             break
                         
                         if clave_servicio == '':
-                            print('LA CLAVE DEL CLIENTE NO PUEDE QUEDAR EN BLANCO. INGRESE UNA CLAVE VÁLIDA')
+                            print('LA CLAVE DEL SERVICIO NO PUEDE QUEDAR EN BLANCO. INGRESE UNA CLAVE VÁLIDA')
                             continue                        
                         
                         elif clave_servicio not in [servicio[0] for servicio in listaservicios]:
