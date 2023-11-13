@@ -1162,107 +1162,6 @@ try:
                         except ValueError:
                             print('Ingrese un número válido. Inténtelo de nuevo.')
                             
-                            
-        def servicios_mas_prestados():
-            while True:
-                try:
-                    with sqlite3.connect ('PIA.db') as conn:
-                        mi_cursor= conn.cursor()
-                        cantidad_servicios = int(input(f"\nIngrese la cantidad de servicios más solicitados a identificar (mínimo 1): "))
-                        
-                        while True:
-                            fecha_inicial = input("Ingrese la fecha inicial del período a reportar (DD-MM-AAAA): ")
-                            try: 
-                                fecha_inicial = datetime.datetime.strptime(fecha_inicial, "%d-%m-%Y").date()
-                                break
-                            except ValueError:
-                                print(f'\nFORMATO DE FECHA INCORRECTO. INTENTE DE NUEVO.')
-                                continue
-                            
-                        while True:
-                            fecha_final = input("Ingrese la fecha final del período a reportar (DD-MM-AAAA): ")
-                            try:
-                                fecha_final = datetime.datetime.strptime(fecha_final, "%d-%m-%Y").date()
-                                break
-                            except ValueError:
-                                print(f'\nFORMATO DE FECHA INCORRECTO. INTENTE DE NUEVO.')
-                                continue
-                        
-                        if fecha_final < fecha_inicial:
-                            print(f"\nLA FECHA FINAL DEBE SER IGUAL O POSTERIOR A LA FECHA INICIAL, INTENTE DE NUEVO.")
-                            continue
-                        
-                        else:
-                            consulta = (f"SELECT S.nombre_servicio, COUNT(D.clave_servicio) as Veces_Servicios \
-                                        FROM detalle_notas D \
-                                        JOIN servicios S ON D.clave_servicio = S.clave_servicio \
-                                        JOIN notas N ON D.folio_nota = N.folio_nota \
-                                        WHERE N.fecha_nota BETWEEN '{fecha_inicial}' AND '{fecha_final}' \
-                                        GROUP BY S.nombre_servicio \
-                                        ORDER BY Veces_Servicios DESC \
-                                        LIMIT {cantidad_servicios} ")
-                            
-                            mi_cursor.execute(consulta)
-                            servicios_mas_prestados=mi_cursor.fetchall()
-                            if not servicios_mas_prestados:
-                                print(f'\nNO HAY SERVICIOS PRESTADOS EN ESE PERÍODO.')
-                                break
-                            else:
-                                print("\nServicios más solicitados:")
-                                print("Servicio:\t\t\tVeces:")
-                                for servicio in servicios_mas_prestados:
-                                    print("{:<30}\t{}".format(servicio[0], servicio[1]))
-                                    
-                                print(f"\nOpciones de exportación:")
-                                print(f"1. Excel")
-                                print(f"2. CSV")
-                                print(f"3. Volver a menú de reportes")
-                                
-                                opcion_exportar=int(input(f'\nOpción a elegir: '))
-                                match opcion_exportar:
-                                    case 1:
-                                        workbook = openpyxl.Workbook()
-                                        sheet = workbook.active
-                                        sheet.title = "Servicios_Mas_Prestados"
-
-                                        sheet['A1'] = "Nombre servicio"
-                                        sheet['B1'] = "Cantidad veces"
-
-                                        row = 2
-                                        for servicio in servicios_mas_prestados:
-                                            sheet[f'A{row}'] = servicio[0]
-                                            sheet[f'B{row}'] = servicio[1]
-                                            row+=1
-
-                                        fecha_reporte_inicial = fecha_inicial.strftime("%d-%m-%Y")
-                                        fecha_reporte_final = fecha_final.strftime("%d-%m-%Y")    
-
-                                        nombre_archivo_excel = f"ReporteServiciosMasPrestados_{fecha_reporte_inicial}_{fecha_reporte_final}.xlsx"
-                                        workbook.save(nombre_archivo_excel)
-                                        print(f"Se ha exportado la información a '{nombre_archivo_excel}'.")      
-                                        break
-                                    
-                                    case 2:
-                                        fecha_reporte_inicial = fecha_inicial.strftime("%d-%m-%Y")
-                                        fecha_reporte_final = fecha_final.strftime("%d-%m-%Y")
-                                        
-                                        nombre_archivo_csv=f"ReporteServiciosMasPrestados_{fecha_reporte_inicial}_{fecha_reporte_final}.csv"
-                                        with open(nombre_archivo_csv, 'w', newline='') as file:
-                                            writer = csv.writer(file)
-                                            writer.writerow(["Nombre servicio", "Cantidad Veces"])
-                                            for servicio in servicios_mas_prestados:
-                                                writer.writerow([servicio[0], servicio[1]])
-                                            
-                                            print(f"Se ha exportado la información a '{nombre_archivo_csv}'.")
-                                            break         
-                                    case 3:
-                                        print('VOLVIENDO AL MENÚ DE ESTADÍSTICOS.')
-                                        break
-                                    case _:
-                                        print("OPCIÓN NO VÁLIDA. INGRESE UN NÚMERO DEL 1 AL 3.")        
-                except ValueError:
-                    print('Valor inválido. Intente de nuevo')
-                    continue                
                 
         def servicios_mas_prestados():
             while True:
@@ -1270,7 +1169,7 @@ try:
                     with sqlite3.connect ('PIA.db') as conn:
                         mi_cursor= conn.cursor()
                         while True:
-                            cantidad_servicios = int(input(f"\nIngrese la cantidad de clientes con más notas a identificar (mínimo 1): "))
+                            cantidad_servicios = int(input(f"\nIngrese la cantidad de servicios más prestados a identificar (mínimo 1): "))
                             if cantidad_servicios==0:
                                 print('EL MÍNIMO ES 1. INTENTE DE NUEVO.')
                                 continue
